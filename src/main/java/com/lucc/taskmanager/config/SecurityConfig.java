@@ -23,9 +23,9 @@ public class SecurityConfig
     {
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
-                        .requestMatchers("/users/**").authenticated()
+                        .requestMatchers("/users/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
-        );
+        ).formLogin(formLogin -> formLogin.loginPage("/login").permitAll());
 
         return http.build();
     }
