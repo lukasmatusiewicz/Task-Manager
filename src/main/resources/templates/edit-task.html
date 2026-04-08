@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Task</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/digitallytailored/classless@latest/classless.min.css">
+</head>
+<body>
+<h1>Edit Task</h1>
+
+<form th:action="@{/tasks/edit/{taskId}(taskId=${task.id})}" th:object="${task}" method="post">
+    <label>Title: <input type="text" th:field="*{title}"></label><br>
+    <label>Description: <input type="text" th:field="*{description}"></label><br>
+    <label>Status:
+        <select th:field="*{status}">
+            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"></option>
+        </select>
+    </label><br>
+    <label>Priority:
+        <select th:field="*{priority}">
+            <option th:each="priority : ${priorities}" th:value="${priority}" th:text="${priority}"></option>
+        </select>
+    </label><br>
+    <button type="submit">Update task</button>
+    <a th:href="@{/tasks}">Cancel</a>
+</form>
+
+</body>
+</html>

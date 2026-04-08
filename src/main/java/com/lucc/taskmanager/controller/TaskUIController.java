@@ -1,5 +1,7 @@
 package com.lucc.taskmanager.controller;
 
+import com.lucc.taskmanager.model.Priority;
+import com.lucc.taskmanager.model.Status;
 import com.lucc.taskmanager.model.Task;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.service.TaskService;
@@ -24,6 +26,8 @@ public class TaskUIController {
         List<Task> tasks = taskService.getTasksByUser(user);
         model.addAttribute("tasks", tasks);
         model.addAttribute("newTask", new Task()); // For the form
+        model.addAttribute("statuses", Status.values());
+        model.addAttribute("priorities", Priority.values());
         return "tasks"; // Returns tasks.html
     }
 
@@ -31,6 +35,21 @@ public class TaskUIController {
     public String addTask(@ModelAttribute("newTask") Task task, @AuthenticationPrincipal User user) {
         taskService.addTask(task, user);
         return "redirect:/tasks"; // Refresh the page
+    }
+
+    @GetMapping("/edit/{taskId}")
+    public String showEditForm(@PathVariable int taskId, @AuthenticationPrincipal User user, Model model) {
+        Task task = taskService.getTaskById(taskId, user);
+        model.addAttribute("task", task);
+        model.addAttribute("statuses", Status.values());
+        model.addAttribute("priorities", Priority.values());
+        return "edit-task";
+    }
+
+    @PostMapping("/edit/{taskId}")
+    public String updateTask(@PathVariable int taskId, @ModelAttribute("task") Task task, @AuthenticationPrincipal User user) {
+        taskService.updateTask(taskId, task, user);
+        return "redirect:/tasks";
     }
 
     @PostMapping("/delete/{taskId}")
