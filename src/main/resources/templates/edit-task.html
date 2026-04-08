@@ -1,28 +1,58 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Edit Task</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/digitallytailored/classless@latest/classless.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Task - Task Manager</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/styles.css}">
 </head>
 <body>
-<h1>Edit Task</h1>
 
-<form th:action="@{/tasks/edit/{taskId}(taskId=${task.id})}" th:object="${task}" method="post">
-    <label>Title: <input type="text" th:field="*{title}"></label><br>
-    <label>Description: <input type="text" th:field="*{description}"></label><br>
-    <label>Status:
-        <select th:field="*{status}">
-            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"></option>
-        </select>
-    </label><br>
-    <label>Priority:
-        <select th:field="*{priority}">
-            <option th:each="priority : ${priorities}" th:value="${priority}" th:text="${priority}"></option>
-        </select>
-    </label><br>
-    <button type="submit">Update task</button>
-    <a th:href="@{/tasks}">Cancel</a>
-</form>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/tasks}">Task Manager</a>
+    </div>
+</nav>
 
+<div class="container">
+    <div class="card edit-card shadow">
+        <div class="card-body p-4">
+            <h2 class="card-title mb-4 text-center">Edit Task</h2>
+            <form th:action="@{/tasks/edit/{taskId}(taskId=${task.id})}" th:object="${task}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Title</label>
+                    <input type="text" th:field="*{title}" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Description</label>
+                    <textarea th:field="*{description}" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Status</label>
+                        <select th:field="*{status}" class="form-select">
+                            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">Priority</label>
+                        <select th:field="*{priority}" class="form-select">
+                            <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="d-grid gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary btn-lg">Update Task</button>
+                    <a th:href="@{/tasks}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
