@@ -1,3 +1,6 @@
+### Local Config ###
+src/main/resources/application-local.properties
+
 HELP.md
 target/
 .mvn/wrapper/maven-wrapper.jar

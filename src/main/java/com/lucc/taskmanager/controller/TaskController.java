@@ -33,20 +33,21 @@ public class TaskController
 
     @PostMapping
     @Operation(summary = "Add a new task for the logged-in user")
-    public Task addTask(@RequestBody Task task, @AuthenticationPrincipal @Parameter(hidden = true) User user)
+    public Task addTask(@Valid @RequestBody Task task, @AuthenticationPrincipal @Parameter(hidden = true) User user)
     {
         return taskService.addTask(task, user);
+    }
+
+    @PutMapping("/{taskId}")
+    @Operation(summary = "Update an existing task")
+    public Task updateTask(@PathVariable int taskId, @Valid @RequestBody Task task, @AuthenticationPrincipal @Parameter(hidden = true) User user)
+    {
+        return taskService.updateTask(taskId, task, user);
     }
 
     @DeleteMapping("/{taskId}")
     @Operation(summary = "Delete a task by ID")
     public void deleteTask(@PathVariable int taskId, @AuthenticationPrincipal @Parameter(hidden = true) User user)
-    {
-        taskService.deleteTask(taskId, user);
-    }
-}
-    @DeleteMapping("/{taskId}")
-    public void deleteTask(@PathVariable int taskId, @AuthenticationPrincipal User user)
     {
         taskService.deleteTask(taskId, user);
     }
