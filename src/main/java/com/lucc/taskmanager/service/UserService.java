@@ -1,5 +1,6 @@
 package com.lucc.taskmanager.service;
 
+import com.lucc.taskmanager.model.Role;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ public class UserService implements UserDetailsService
 
     public User addUser(@RequestBody User user)
     {
+        if (user.getRole() == null) {
+            user.setRole(Role.USER);
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
