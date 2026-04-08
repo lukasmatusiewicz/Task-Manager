@@ -3,6 +3,7 @@ package com.lucc.taskmanager.controller;
 import com.lucc.taskmanager.model.Task;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,13 +27,13 @@ public class TaskController
     }
 
     @PostMapping
-    public Task addTask(@RequestBody Task task, @AuthenticationPrincipal User user)
+    public Task addTask(@Valid @RequestBody Task task, @AuthenticationPrincipal User user)
     {
         return taskService.addTask(task, user);
     }
 
     @PutMapping("/{taskId}")
-    public Task updateTask(@PathVariable int taskId, @RequestBody Task task, @AuthenticationPrincipal User user)
+    public Task updateTask(@PathVariable int taskId, @Valid @RequestBody Task task, @AuthenticationPrincipal User user)
     {
         return taskService.updateTask(taskId, task, user);
     }

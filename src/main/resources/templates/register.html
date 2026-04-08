@@ -19,15 +19,18 @@
             <form th:action="@{/register}" th:object="${user}" method="post">
                 <div class="mb-3">
                     <label class="form-label">Username</label>
-                    <input type="text" th:field="*{username}" class="form-control" required placeholder="Choose a username">
+                    <input type="text" th:field="*{username}" class="form-control" th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'" required placeholder="Choose a username">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Email</label>
-                    <input type="email" th:field="*{email}" class="form-control" required placeholder="name@example.com">
+                    <input type="email" th:field="*{email}" class="form-control" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'" required placeholder="name@example.com">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Password</label>
-                    <input type="password" th:field="*{password}" class="form-control" required placeholder="Choose a strong password">
+                    <input type="password" th:field="*{password}" class="form-control" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'" required placeholder="Choose a strong password">
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
                 </div>
                 <button type="submit" class="btn btn-lg btn-success w-100 mt-2">Register</button>
             </form>
