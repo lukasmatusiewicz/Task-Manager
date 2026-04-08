@@ -1,5 +1,8 @@
 # 🚀 Modern Task Manager - Portfolio Project
 
+![Coverage](.github/badges/jacoco.svg)
+![Branches](.github/badges/branches.svg)
+
 A comprehensive, full-stack Task Management application built with **Spring Boot 3** and **Java 21**. This project serves as a showcase of modern software engineering practices, featuring a layered architecture, robust security, and a responsive, interactive UI.
 
 ---
@@ -26,6 +29,23 @@ This project is designed to be easily testable by anyone, whether they are a dev
 
 ### **4. Containerized Portability (Docker)**
 *   No Java installed? No problem. Run `docker-compose up --build` to spin up both the application and a **PostgreSQL** database in isolated containers.
+
+### **5. CI/CD with GitHub Actions**
+*   The project includes a GitHub Actions workflow (`maven.yml`) that automatically builds the project and runs all tests on every push or pull request to the `master`, `main`, or `dockerization` branches.
+
+---
+
+## 🧪 Testing
+
+The project includes a suite of unit tests for the service layer, ensuring business logic correctness.
+
+*   **TaskServiceTest**: Tests CRUD operations, user-based task access, and validation logic.
+*   **UserServiceTest**: Tests user registration, password encryption, and Spring Security's `UserDetailsService` implementation.
+
+To run the tests locally, use:
+```bash
+./mvnw test
+```
 
 ---
 
