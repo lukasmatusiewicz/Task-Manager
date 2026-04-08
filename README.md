@@ -18,11 +18,11 @@ This project is designed to be easily testable by anyone, whether they are a dev
 *   Explore all documented REST endpoints.
 *   Click **"Try it out"** on any endpoint (like `POST /api/tasks`) to send real JSON requests and see the live responses directly in your browser.
 
-### **3. Database Inspection (H2 Console)**
-*   While running in development mode, visit `http://localhost:8080/h2-console`.
-*   **JDBC URL**: `jdbc:h2:mem:testdb`
-*   **Username**: `sa` | **Password**: `password`
-*   Run `SELECT * FROM TASKS;` to see how your data is being mapped by Hibernate.
+### **3. Database Inspection (PostgreSQL)**
+*   Use a tool like **pgAdmin 4** or **DBeaver** to connect to your local database.
+*   **Host**: `localhost` | **Port**: `5432`
+*   **Database**: `taskmanager` | **User**: `postgres`
+*   Run `SELECT * FROM users;` or `SELECT * FROM task;` to see your persistent data.
 
 ### **4. Containerized Portability (Docker)**
 *   No Java installed? No problem. Run `docker-compose up --build` to spin up both the application and a **PostgreSQL** database in isolated containers.
@@ -32,7 +32,7 @@ This project is designed to be easily testable by anyone, whether they are a dev
 ## 🛠️ Tech Stack & Skills Showcased
 
 ### **Backend (Java/Spring Boot)**
-*   **Java 21**: Leveraging the latest LTS features.
+*   **Java 21**
 *   **Spring Boot 3.4.3**: High-performance backend framework.
 *   **Spring Security**: Robust authentication and role-based access control (USER/ADMIN), with CSRF protection and secure password hashing (BCrypt).
 *   **Spring Data JPA (Hibernate)**: Advanced ORM for seamless database interaction.
@@ -42,7 +42,6 @@ This project is designed to be easily testable by anyone, whether they are a dev
 
 ### **Database & Persistence**
 *   **PostgreSQL**: Production-grade persistent database.
-*   **H2 Database**: In-memory database used for local development and rapid testing.
 *   **Dockerized Storage**: Database persistence maintained via Docker Volumes.
 
 ### **Frontend & UX**
@@ -79,7 +78,7 @@ This project is designed to be easily testable by anyone, whether they are a dev
 3.  **Access the application**:
     *   **UI**: `http://localhost:8080/tasks`
     *   **API Docs (Swagger)**: `http://localhost:8080/swagger-ui.html`
-    *   **Database (H2 Console)**: `http://localhost:8080/h2-console` (Username: `sa`, Password: `password`)
+    *   **Database (PostgreSQL)**: Use pgAdmin 4 or your preferred SQL client at `localhost:5432`.
 
 ---
 
