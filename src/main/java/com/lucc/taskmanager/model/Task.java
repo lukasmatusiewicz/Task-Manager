@@ -1,6 +1,8 @@
 package com.lucc.taskmanager.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Task
@@ -9,7 +11,12 @@ public class Task
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    @NotBlank(message = "Title is mandatory")
+    @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     private String title;
+
+    @NotBlank(message = "Description is mandatory")
+    @Size(max = 255, message = "Description can be up to 255 characters")
     private String description;
 
     @Enumerated(EnumType.STRING)

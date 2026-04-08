@@ -5,9 +5,11 @@ import com.lucc.taskmanager.model.Status;
 import com.lucc.taskmanager.model.Task;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,14 +27,23 @@ public class TaskUIController {
     public String getTasks(@AuthenticationPrincipal User user, Model model) {
         List<Task> tasks = taskService.getTasksByUser(user);
         model.addAttribute("tasks", tasks);
-        model.addAttribute("newTask", new Task()); // For the form
+        if (!model.containsAttribute("newTask")) {
+            model.addAttribute("newTask", new Task()); // For the form
+        }
         model.addAttribute("statuses", Status.values());
         model.addAttribute("priorities", Priority.values());
         return "tasks"; // Returns tasks.html
     }
 
     @PostMapping("/add")
-    public String addTask(@ModelAttribute("newTask") Task task, @AuthenticationPrincipal User user) {
+    public String addTask(@Valid @ModelAttribute("newTask") Task task, BindingResult bindingResult, @AuthenticationPrincipal User user, Model model) {
+        if (bindingResult.hasErrors()) {
+            List<Task> tasks = taskService.getTasksByUser(user);
+            model.addAttribute("tasks", tasks);
+            model.addAttribute("statuses", Status.values());
+            model.addAttribute("priorities", Priority.values());
+            return "tasks";
+        }
         taskService.addTask(task, user);
         return "redirect:/tasks"; // Refresh the page
     }
@@ -47,7 +58,12 @@ public class TaskUIController {
     }
 
     @PostMapping("/edit/{taskId}")
-    public String updateTask(@PathVariable int taskId, @ModelAttribute("task") Task task, @AuthenticationPrincipal User user) {
+    public String updateTask(@PathVariable int taskId, @Valid @ModelAttribute("task") Task task, BindingResult bindingResult, @AuthenticationPrincipal User user, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("statuses", Status.values());
+            model.addAttribute("priorities", Priority.values());
+            return "edit-task";
+        }
         taskService.updateTask(taskId, task, user);
         return "redirect:/tasks";
     }
