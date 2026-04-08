@@ -23,6 +23,7 @@ public class SecurityConfig
     {
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
+                        .requestMatchers("/register/**").permitAll()
                         .requestMatchers("/users/**").hasRole("ADMIN")
                         .requestMatchers("/tasks/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().permitAll()
