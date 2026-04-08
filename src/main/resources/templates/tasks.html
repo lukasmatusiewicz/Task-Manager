@@ -10,8 +10,10 @@
 <!-- Tasks list -->
 <ul>
     <li th:each="task : ${tasks}">
-        <span th:text="${task.title}"></span> -
-        <span th:text="${task.description}"></span>
+        <b th:text="${task.title}"></b> -
+        <span th:text="${task.description}"></span> |
+        <span th:text="${task.status}"></span> |
+        <span th:text="${task.priority}"></span>
         <form th:action="@{/tasks/delete/{taskId}(taskId=${task.id})}" method="post" style="display:inline;">
             <button type="submit">Delete</button>
         </form>
@@ -24,6 +26,16 @@
 <form th:action="@{/tasks/add}" th:object="${newTask}" method="post">
     <label>Title: <input type="text" th:field="*{title}"></label><br>
     <label>Description: <input type="text" th:field="*{description}"></label><br>
+    <label>Status:
+        <select th:field="*{status}">
+            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}"></option>
+        </select>
+    </label><br>
+    <label>Priority:
+        <select th:field="*{priority}">
+            <option th:each="priority : ${priorities}" th:value="${priority}" th:text="${priority}"></option>
+        </select>
+    </label><br>
     <button type="submit">Add task</button>
 </form>
 

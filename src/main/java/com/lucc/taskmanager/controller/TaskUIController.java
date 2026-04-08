@@ -1,5 +1,7 @@
 package com.lucc.taskmanager.controller;
 
+import com.lucc.taskmanager.model.Priority;
+import com.lucc.taskmanager.model.Status;
 import com.lucc.taskmanager.model.Task;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.service.TaskService;
@@ -24,6 +26,8 @@ public class TaskUIController {
         List<Task> tasks = taskService.getTasksByUser(user);
         model.addAttribute("tasks", tasks);
         model.addAttribute("newTask", new Task()); // For the form
+        model.addAttribute("statuses", Status.values());
+        model.addAttribute("priorities", Priority.values());
         return "tasks"; // Returns tasks.html
     }
 

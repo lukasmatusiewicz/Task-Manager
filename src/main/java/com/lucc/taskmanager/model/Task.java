@@ -12,17 +12,25 @@ public class Task
     private String title;
     private String description;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Enumerated(EnumType.STRING)
+    private Priority priority;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     public Task() {}
 
-    public Task(String title, String description, User user)
+    public Task(String title, String description, User user, Status status, Priority priority)
     {
         this.title = title;
         this.description = description;
         this.user = user;
+        this.status = status;
+        this.priority = priority;
     }
 
     public String getTitle()
@@ -43,6 +51,26 @@ public class Task
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public Status getStatus()
+    {
+        return status;
+    }
+
+    public void setStatus(Status status)
+    {
+        this.status = status;
+    }
+
+    public Priority getPriority()
+    {
+        return priority;
+    }
+
+    public void setPriority(Priority priority)
+    {
+        this.priority = priority;
     }
 
     public User getUser()
