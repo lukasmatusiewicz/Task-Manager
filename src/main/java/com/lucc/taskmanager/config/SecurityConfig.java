@@ -23,13 +23,15 @@ public class SecurityConfig
     {
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
-                        .requestMatchers("/register/**").permitAll()
+                        .requestMatchers("/register/**", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                         .requestMatchers("/users/**").hasRole("ADMIN")
                         .requestMatchers("/tasks/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().permitAll()
         ).formLogin(formLogin ->
                 formLogin.loginPage("/login")
-                         .defaultSuccessUrl("/tasks").permitAll());
+                         .defaultSuccessUrl("/tasks").permitAll())
+        .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**", "/v3/api-docs/**", "/swagger-ui/**"))
+        .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 
         return http.build();
     }
