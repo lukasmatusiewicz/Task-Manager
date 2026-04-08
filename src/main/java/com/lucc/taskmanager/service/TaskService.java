@@ -28,6 +28,26 @@ public class TaskService
         return taskRepository.save(task);
     }
 
+    public Task getTaskById(int taskId, User user)
+    {
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("No such task with id: " + taskId));
+
+        if(!task.getUser().getUsername().equals(user.getUsername()))
+            throw new IllegalArgumentException("You can only access your own tasks.");
+
+        return task;
+    }
+
+    public Task updateTask(int taskId, Task updatedTask, User user)
+    {
+        Task existingTask = getTaskById(taskId, user);
+        existingTask.setTitle(updatedTask.getTitle());
+        existingTask.setDescription(updatedTask.getDescription());
+        existingTask.setStatus(updatedTask.getStatus());
+        existingTask.setPriority(updatedTask.getPriority());
+        return taskRepository.save(existingTask);
+    }
+
     public void deleteTask(int taskId, User user)
     {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("No such task with id: " + taskId));

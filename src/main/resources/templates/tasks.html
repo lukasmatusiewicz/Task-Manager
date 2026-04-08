@@ -14,6 +14,7 @@
         <span th:text="${task.description}"></span> |
         <span th:text="${task.status}"></span> |
         <span th:text="${task.priority}"></span>
+        <a th:href="@{/tasks/edit/{taskId}(taskId=${task.id})}">Edit</a>
         <form th:action="@{/tasks/delete/{taskId}(taskId=${task.id})}" method="post" style="display:inline;">
             <button type="submit">Delete</button>
         </form>

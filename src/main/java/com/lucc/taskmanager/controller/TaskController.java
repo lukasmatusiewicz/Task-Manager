@@ -31,6 +31,12 @@ public class TaskController
         return taskService.addTask(task, user);
     }
 
+    @PutMapping("/{taskId}")
+    public Task updateTask(@PathVariable int taskId, @RequestBody Task task, @AuthenticationPrincipal User user)
+    {
+        return taskService.updateTask(taskId, task, user);
+    }
+
     @DeleteMapping("/{taskId}")
     public void deleteTask(@PathVariable int taskId, @AuthenticationPrincipal User user)
     {

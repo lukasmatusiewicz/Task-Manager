@@ -37,6 +37,21 @@ public class TaskUIController {
         return "redirect:/tasks"; // Refresh the page
     }
 
+    @GetMapping("/edit/{taskId}")
+    public String showEditForm(@PathVariable int taskId, @AuthenticationPrincipal User user, Model model) {
+        Task task = taskService.getTaskById(taskId, user);
+        model.addAttribute("task", task);
+        model.addAttribute("statuses", Status.values());
+        model.addAttribute("priorities", Priority.values());
+        return "edit-task";
+    }
+
+    @PostMapping("/edit/{taskId}")
+    public String updateTask(@PathVariable int taskId, @ModelAttribute("task") Task task, @AuthenticationPrincipal User user) {
+        taskService.updateTask(taskId, task, user);
+        return "redirect:/tasks";
+    }
+
     @PostMapping("/delete/{taskId}")
     public String deleteTask(@PathVariable int taskId, @AuthenticationPrincipal User user) {
         taskService.deleteTask(taskId, user);
