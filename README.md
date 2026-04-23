@@ -80,6 +80,7 @@ To run the tests locally, use:
 
 ## ✨ Key Features
 *   **Interactive Dashboard**: Real-time summary of pending, overdue, and recently completed tasks with visual charts.
+*   **Dark Mode Support**: Full dark theme support with persistence across sessions using `localStorage`.
 *   **Full CRUD Cycle**: Create, Read, Update, and Delete tasks.
 *   **Due Date Tracking**: Set deadlines for tasks and track overdue items.
 *   **Quick Status Toggle**: Instantly mark tasks as Done or Undone from the main list view.
