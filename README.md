@@ -19,7 +19,7 @@ This project is designed to be easily testable by anyone, whether they are a dev
 
 ### **2. Interactive API Testing (Swagger)**
 *   Navigate to `http://localhost:8080/swagger-ui.html`.
-*   Explore all documented REST endpoints.
+*   Explore all documented REST endpoints with **detailed operation descriptions** and **predefined API responses**.
 *   Click **"Try it out"** on any endpoint (like `POST /api/tasks`) to send real JSON requests and see the live responses directly in your browser.
 
 ### **3. Database Inspection (PostgreSQL)**
@@ -86,7 +86,7 @@ To run the tests locally, use:
 *   **Quick Status Toggle**: Instantly mark tasks as Done or Undone from the main list view.
 *   **User Lifecycle**: Public registration and secure login system.
 *   **Task Metadata**: Categorize tasks by **Status** (TODO, DONE) and **Priority** (HIGH, MEDIUM, LOW).
-*   **RESTful API**: Comprehensive API endpoints for programmatic task management, fully documented with Swagger.
+*   **RESTful API**: Comprehensive API endpoints for programmatic task management, fully documented with professional-grade OpenAPI descriptions and responses.
 
 ---
 
