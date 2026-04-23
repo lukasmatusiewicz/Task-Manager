@@ -1,17 +1,30 @@
 /* Custom Task Manager Styles */
 
+:root {
+    --task-card-bg: #ffffff;
+    --task-card-text: #212529;
+}
+
+[data-bs-theme="dark"] {
+    --task-card-bg: #2b3035;
+    --task-card-text: #dee2e6;
+}
+
 body {
-    background-color: #f8f9fa;
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
 }
 
 /* Task Card Hover Effects */
 .task-card {
     transition: transform 0.2s, box-shadow 0.2s;
+    background-color: var(--task-card-bg);
+    color: var(--task-card-text);
 }
 
 .task-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 /* Priority Indicator Borders */
@@ -43,4 +56,16 @@ body.auth-page {
     display: flex;
     align-items: center;
     min-height: 100vh;
+}
+
+/* Dark Mode Toggle Button Positioning */
+.theme-toggle {
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 20px;
+    transition: background-color 0.3s;
+}
+
+.theme-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }
