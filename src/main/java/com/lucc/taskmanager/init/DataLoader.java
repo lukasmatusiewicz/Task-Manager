@@ -12,6 +12,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Component
@@ -39,20 +40,26 @@ public class DataLoader implements CommandLineRunner
             userRepository.saveAll(List.of(admin, user));
             System.out.println("Users loaded");
 
-            Task adminTask1 = new Task("Pizza", "Pizza is a dish of Italian origin made by a mixture of fried bread and tomatoes, usually sliced thinly and topped with a slice of cheese.", admin, Status.TODO, Priority.MEDIUM);
-            Task adminTask2 = new Task("Burger", "A burger is a large, flat, round, steak dressed in lettuce, tomato, cheese, and meat sauce.", admin, Status.TODO, Priority.MEDIUM);
-            Task adminTask3 = new Task("Pasta", "Pasta is a food made from a mixture of flour, eggs, and water, typically cooked under high heat.", admin, Status.TODO, Priority.MEDIUM);
-            Task adminTask4 = new Task("Sandwich", "A sandwich is a flat bread with lettuce and tomato on one side, and a slice of cheese on the other side.", admin, Status.TODO, Priority.MEDIUM);
-            Task adminTask5 = new Task("Coffee", "Coffee is a brewed drink made from roasted coffee beans, ground coffee, and sugar.", admin, Status.TODO, Priority.MEDIUM);
-            Task adminTask6 = new Task("Coffee Shaker", "A coffee shaker is a container for storing and shaking coffee.", admin, Status.TODO, Priority.MEDIUM);
-            Task adminTask7 = new Task("Coffee Mug", "A coffee mug is a container for storing and shaking coffee.", admin, Status.TODO, Priority.MEDIUM);
+            LocalDate today = LocalDate.now();
 
+            Task adminTask1 = new Task("Pizza", "Pizza description", admin, Status.TODO, Priority.MEDIUM, today.plusDays(2));
+            Task adminTask2 = new Task("Burger", "Burger description", admin, Status.TODO, Priority.HIGH, today.minusDays(1)); // Overdue
+            Task adminTask3 = new Task("Pasta", "Pasta description", admin, Status.DONE, Priority.LOW, today.minusDays(2));
+            adminTask3.setCompletionDate(today.minusDays(1)); // Completed this week
+            
+            Task adminTask4 = new Task("Sandwich", "Sandwich description", admin, Status.TODO, Priority.MEDIUM, today.plusDays(5));
+            Task adminTask5 = new Task("Coffee", "Coffee description", admin, Status.TODO, Priority.MEDIUM, today.plusDays(1));
+            Task adminTask6 = new Task("Coffee Shaker", "Coffee shaker description", admin, Status.TODO, Priority.MEDIUM, today.plusDays(3));
+            Task adminTask7 = new Task("Coffee Mug", "Coffee mug description", admin, Status.DONE, Priority.MEDIUM, today.minusDays(10));
+            adminTask7.setCompletionDate(today.minusDays(8)); // Completed more than a week ago
 
-            Task userTask1 = new Task("Pizza", "Pizza is a dish of Italian origin made by a mixture of fried bread and tomatoes, usually sliced thinly and topped with a slice of cheese.", user, Status.TODO, Priority.MEDIUM);
-            Task userTask2 = new Task("Burger", "A burger is a large, flat, round, steak dressed in lettuce, tomato, cheese, and meat sauce.", user, Status.TODO, Priority.MEDIUM);
-            Task userTask3 = new Task("Pasta", "Pasta is a food made from a mixture of flour, eggs, and water, typically cooked under high heat.", user, Status.TODO, Priority.MEDIUM);
-            Task userTask4 = new Task("Sandwich", "A sandwich is a flat bread with lettuce and tomato on one side, and a slice of cheese on the other side.", user, Status.TODO, Priority.MEDIUM);
-            Task userTask5 = new Task("Coffee", "Coffee is a brewed drink made from roasted coffee beans, ground coffee, and sugar.", user, Status.TODO, Priority.MEDIUM);
+            Task userTask1 = new Task("Study Spring Boot", "Learn about Spring Boot security and data.", user, Status.TODO, Priority.HIGH, today.plusDays(3));
+            Task userTask2 = new Task("Workout", "Go to the gym for 1 hour.", user, Status.TODO, Priority.MEDIUM, today.minusDays(2)); // Overdue
+            Task userTask3 = new Task("Buy Groceries", "Buy milk, eggs, and bread.", user, Status.DONE, Priority.LOW, today.minusDays(1));
+            userTask3.setCompletionDate(today); // Completed today
+            
+            Task userTask4 = new Task("Read a Book", "Read at least 30 pages.", user, Status.TODO, Priority.LOW, today.plusDays(7));
+            Task userTask5 = new Task("Clean the Room", "Deep clean the bedroom.", user, Status.TODO, Priority.MEDIUM, today.plusDays(1));
 
             taskRepository.saveAll(List.of(adminTask1, adminTask2, adminTask3, adminTask4, adminTask5, adminTask6, adminTask7, userTask1, userTask2, userTask3, userTask4, userTask5));
             System.out.println("Tasks loaded");

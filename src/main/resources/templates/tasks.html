@@ -9,17 +9,32 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" th:href="@{/styles.css}">
     <!-- CSRF Token for AJAX -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
     <div class="container">
         <a class="navbar-brand" href="#">Task Manager</a>
-        <div class="d-flex">
-            <span class="navbar-text me-3" th:text="'Logged in as: ' + ${#authentication.name}"></span>
-            <form th:action="@{/logout}" method="post">
-                <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
-            </form>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/tasks}">My Tasks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/dashboard}">Dashboard</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3 text-white" th:text="'Logged in as: ' + ${#authentication.name}"></span>
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+                </form>
+            </div>
         </div>
     </div>
 </nav>
@@ -37,12 +52,22 @@
                             <div>
                                 <h5 class="card-title" th:text="${task.title}"></h5>
                                 <p class="card-text text-muted" th:text="${task.description}"></p>
+                                <div class="mb-2" th:if="${task.dueDate != null}">
+                                    <small class="text-muted">
+                                        <strong>Due:</strong> <span th:text="${task.dueDate}"></span>
+                                    </small>
+                                </div>
                                 <span class="badge rounded-pill bg-info text-dark" th:text="${task.status}"></span>
                                 <span class="badge rounded-pill" 
                                       th:classappend="${task.priority == T(com.lucc.taskmanager.model.Priority).HIGH ? 'bg-danger' : (task.priority == T(com.lucc.taskmanager.model.Priority).MEDIUM ? 'bg-warning text-dark' : 'bg-success')}"
                                       th:text="${task.priority}"></span>
                             </div>
                             <div class="btn-group">
+                                <button class="btn btn-sm" 
+                                        th:classappend="${task.status == T(com.lucc.taskmanager.model.Status).DONE ? 'btn-outline-success' : 'btn-outline-primary'}"
+                                        th:onclick="'toggleTaskStatus(' + ${task.id} + ')'"
+                                        th:text="${task.status == T(com.lucc.taskmanager.model.Status).DONE ? 'Undone' : 'Done'}">
+                                </button>
                                 <a th:href="@{/tasks/edit/{id}(id=${task.id})}" class="btn btn-sm btn-outline-secondary">Edit</a>
                                 <button class="btn btn-sm btn-outline-danger" th:onclick="'deleteTask(' + ${task.id} + ')'">Delete</button>
                             </div>
@@ -83,6 +108,10 @@
                                 <option th:each="p : ${priorities}" th:value="${p}" th:text="${p}"></option>
                             </select>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Due Date</label>
+                            <input type="date" th:field="*{dueDate}" class="form-control">
+                        </div>
                         <button type="submit" class="btn btn-primary w-100">Add Task</button>
                     </form>
                 </div>
@@ -95,6 +124,29 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    async function toggleTaskStatus(taskId) {
+        const token = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const header = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        try {
+            const response = await fetch(`/api/tasks/${taskId}/toggle`, {
+                method: 'PATCH',
+                headers: {
+                    [header]: token
+                }
+            });
+
+            if (response.ok) {
+                location.reload(); // Simplest way to reflect changes
+            } else {
+                alert('Failed to toggle task status.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while toggling the task status.');
+        }
+    }
+
     async function deleteTask(taskId) {
         if (!confirm('Are you sure you want to delete this task?')) return;
 

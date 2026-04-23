@@ -3,6 +3,7 @@ package com.lucc.taskmanager.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 @Entity
 public class Task
@@ -25,6 +26,10 @@ public class Task
     @Enumerated(EnumType.STRING)
     private Priority priority;
 
+    private LocalDate dueDate;
+
+    private LocalDate completionDate;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
@@ -38,6 +43,16 @@ public class Task
         this.user = user;
         this.status = status;
         this.priority = priority;
+    }
+
+    public Task(String title, String description, User user, Status status, Priority priority, LocalDate dueDate)
+    {
+        this.title = title;
+        this.description = description;
+        this.user = user;
+        this.status = status;
+        this.priority = priority;
+        this.dueDate = dueDate;
     }
 
     public String getTitle()
@@ -78,6 +93,26 @@ public class Task
     public void setPriority(Priority priority)
     {
         this.priority = priority;
+    }
+
+    public LocalDate getDueDate()
+    {
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate)
+    {
+        this.dueDate = dueDate;
+    }
+
+    public LocalDate getCompletionDate()
+    {
+        return completionDate;
+    }
+
+    public void setCompletionDate(LocalDate completionDate)
+    {
+        this.completionDate = completionDate;
     }
 
     public User getUser()

@@ -13,7 +13,8 @@ This project is designed to be easily testable by anyone, whether they are a dev
 
 ### **1. The Full Experience (Web UI)**
 *   **Register a New Account**: Navigate to `http://localhost:8080/register` and create your own user.
-*   **Manage Your Tasks**: Add, edit, and delete tasks. Notice the **AJAX-powered deletion** that happens instantly without a page reload.
+*   **Explore the Dashboard**: Visit the new **Dashboard** to see live statistics like pending tasks, overdue items, and your weekly completion rate. Check out the interactive charts for status and priority distribution.
+*   **Manage Your Tasks**: Add tasks with **Due Dates**. Use the new **Quick Toggle** (Done/Undone) to update task status instantly from the list.
 *   **Security Check**: Try to access `http://localhost:8080/tasks` without logging in—you'll be automatically redirected to the secure login page.
 
 ### **2. Interactive API Testing (Swagger)**
@@ -67,7 +68,8 @@ To run the tests locally, use:
 ### **Frontend & UX**
 *   **Thymeleaf**: Modern server-side Java template engine.
 *   **Bootstrap 5**: Responsive, mobile-first design for a professional look.
-*   **AJAX (Fetch API)**: Interactive, "snappy" UI features like task deletion without full-page reloads.
+*   **Chart.js**: Interactive data visualization for task statistics.
+*   **AJAX (Fetch API)**: Interactive, "snappy" UI features like task deletion and status toggling without full-page reloads.
 
 ### **DevOps & Documentation**
 *   **Docker & Docker Compose**: Full containerization for one-command environment setup.
@@ -77,10 +79,12 @@ To run the tests locally, use:
 ---
 
 ## ✨ Key Features
+*   **Interactive Dashboard**: Real-time summary of pending, overdue, and recently completed tasks with visual charts.
 *   **Full CRUD Cycle**: Create, Read, Update, and Delete tasks.
+*   **Due Date Tracking**: Set deadlines for tasks and track overdue items.
+*   **Quick Status Toggle**: Instantly mark tasks as Done or Undone from the main list view.
 *   **User Lifecycle**: Public registration and secure login system.
 *   **Task Metadata**: Categorize tasks by **Status** (TODO, DONE) and **Priority** (HIGH, MEDIUM, LOW).
-*   **Interactive UI**: Smooth, JavaScript-powered deletions with real-time DOM updates.
 *   **RESTful API**: Comprehensive API endpoints for programmatic task management, fully documented with Swagger.
 
 ---
