@@ -51,4 +51,11 @@ public class TaskController
     {
         taskService.deleteTask(taskId, user);
     }
+
+    @PatchMapping("/{taskId}/toggle")
+    @Operation(summary = "Toggle task status between TODO and DONE")
+    public Task toggleTaskStatus(@PathVariable int taskId, @AuthenticationPrincipal @Parameter(hidden = true) User user)
+    {
+        return taskService.toggleTaskStatus(taskId, user);
+    }
 }

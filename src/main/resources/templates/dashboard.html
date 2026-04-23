@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Task Manager</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" th:href="@{/styles.css}">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">Task Manager</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/tasks}">My Tasks</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/dashboard}">Dashboard</a>
+                </li>
+            </ul>
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3 text-white" th:text="'Logged in as: ' + ${#authentication.name}"></span>
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <h2 class="mb-4">Task Dashboard</h2>
+    
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Tasks</h5>
+                    <p class="card-text display-4 fw-bold" th:text="${pending}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-3 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Overdue Tasks</h5>
+                    <p class="card-text display-4 fw-bold" th:text="${overdue}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3 shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title">Completed (7 Days)</h5>
+                    <p class="card-text display-4 fw-bold" th:text="${completedThisWeek}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Tasks by Status</h5>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Tasks by Priority</h5>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="priorityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const statusData = /*[[${statusCounts}]]*/ {};
+    const priorityData = /*[[${priorityCounts}]]*/ {};
+
+    // Mapping colors to labels
+    const statusColors = {
+        'TODO': '#17a2b8',
+        'DONE': '#28a745'
+    };
+
+    const priorityColors = {
+        'LOW': '#28a745',
+        'MEDIUM': '#ffc107',
+        'HIGH': '#dc3545'
+    };
+
+    function getColors(data, colorMap) {
+        return Object.keys(data).map(key => colorMap[key] || '#6c757d');
+    }
+
+    // Status Chart
+    const ctxStatus = document.getElementById('statusChart').getContext('2d');
+    if (Object.keys(statusData).length > 0) {
+        new Chart(ctxStatus, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(statusData),
+                datasets: [{
+                    data: Object.values(statusData),
+                    backgroundColor: getColors(statusData, statusColors),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } else {
+        ctxStatus.font = "16px Arial";
+        ctxStatus.textAlign = "center";
+        ctxStatus.fillText("No status data available", 150, 150);
+    }
+
+    // Priority Chart
+    const ctxPriority = document.getElementById('priorityChart').getContext('2d');
+    if (Object.keys(priorityData).length > 0) {
+        new Chart(ctxPriority, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(priorityData),
+                datasets: [{
+                    data: Object.values(priorityData),
+                    backgroundColor: getColors(priorityData, priorityColors),
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    } else {
+        ctxPriority.font = "16px Arial";
+        ctxPriority.textAlign = "center";
+        ctxPriority.fillText("No priority data available", 150, 150);
+    }
+    /*]]>*/
+</script>
+
+</body>
+</html>
