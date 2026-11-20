@@ -1,6 +1,7 @@
 package com.lucc.taskmanager.controller;
 
-import com.lucc.taskmanager.model.Task;
+import com.lucc.taskmanager.dto.TaskRequest;
+import com.lucc.taskmanager.dto.TaskResponse;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.service.TaskService;
 import jakarta.validation.Valid;
@@ -34,34 +35,36 @@ public class TaskController
         @ApiResponse(responseCode = "200", description = "Successfully retrieved tasks"),
         @ApiResponse(responseCode = "401", description = "You are not authorized to view the resource", content = @Content)
     })
-    public List<Task> getTaskByUser(@AuthenticationPrincipal @Parameter(hidden = true) User user)
+    public List<TaskResponse> getTaskByUser(@AuthenticationPrincipal @Parameter(hidden = true) User user)
     {
-        return taskService.getTasksByUser(user);
+        return taskService.getTasksByUser(user).stream()
+                .map(TaskResponse::from)
+                .toList();
     }
 
     @PostMapping
     @Operation(summary = "Add a new task", description = "Creates a new task for the currently authenticated user.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully created the task", content = @Content(schema = @Schema(implementation = Task.class))),
+        @ApiResponse(responseCode = "200", description = "Successfully created the task", content = @Content(schema = @Schema(implementation = TaskResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content),
         @ApiResponse(responseCode = "401", description = "You are not authorized to create a task", content = @Content)
     })
-    public Task addTask(@Valid @RequestBody Task task, @AuthenticationPrincipal @Parameter(hidden = true) User user)
+    public TaskResponse addTask(@Valid @RequestBody TaskRequest request, @AuthenticationPrincipal @Parameter(hidden = true) User user)
     {
-        return taskService.addTask(task, user);
+        return TaskResponse.from(taskService.addTask(request.toEntity(), user));
     }
 
     @PutMapping("/{taskId}")
     @Operation(summary = "Update an existing task", description = "Updates the details of an existing task identified by its ID. Users can only update their own tasks.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully updated the task", content = @Content(schema = @Schema(implementation = Task.class))),
+        @ApiResponse(responseCode = "200", description = "Successfully updated the task", content = @Content(schema = @Schema(implementation = TaskResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid task ID or input data", content = @Content),
         @ApiResponse(responseCode = "401", description = "You are not authorized to update this task", content = @Content),
         @ApiResponse(responseCode = "404", description = "Task not found", content = @Content)
     })
-    public Task updateTask(@PathVariable int taskId, @Valid @RequestBody Task task, @AuthenticationPrincipal @Parameter(hidden = true) User user)
+    public TaskResponse updateTask(@PathVariable int taskId, @Valid @RequestBody TaskRequest request, @AuthenticationPrincipal @Parameter(hidden = true) User user)
     {
-        return taskService.updateTask(taskId, task, user);
+        return TaskResponse.from(taskService.updateTask(taskId, request.toEntity(), user));
     }
 
     @DeleteMapping("/{taskId}")
@@ -79,12 +82,12 @@ public class TaskController
     @PatchMapping("/{taskId}/toggle")
     @Operation(summary = "Toggle task status", description = "Toggles the status of a task between 'TODO' and 'DONE'. Also manages the 'completionDate' automatically.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully toggled task status", content = @Content(schema = @Schema(implementation = Task.class))),
+        @ApiResponse(responseCode = "200", description = "Successfully toggled task status", content = @Content(schema = @Schema(implementation = TaskResponse.class))),
         @ApiResponse(responseCode = "401", description = "You are not authorized to toggle this task", content = @Content),
         @ApiResponse(responseCode = "404", description = "Task not found", content = @Content)
     })
-    public Task toggleTaskStatus(@PathVariable int taskId, @AuthenticationPrincipal @Parameter(hidden = true) User user)
+    public TaskResponse toggleTaskStatus(@PathVariable int taskId, @AuthenticationPrincipal @Parameter(hidden = true) User user)
     {
-        return taskService.toggleTaskStatus(taskId, user);
+        return TaskResponse.from(taskService.toggleTaskStatus(taskId, user));
     }
 }

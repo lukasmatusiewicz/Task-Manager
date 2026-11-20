@@ -1,5 +1,6 @@
 package com.lucc.taskmanager.service;
 
+import com.lucc.taskmanager.dto.RegisterRequest;
 import com.lucc.taskmanager.model.Role;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.repository.UserRepository;
@@ -9,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -31,13 +31,26 @@ public class UserService implements UserDetailsService
         return userRepository.findAll();
     }
 
-    public User addUser(@RequestBody User user)
+    public User addUser(User user)
     {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
         if (user.getRole() == null) {
             user.setRole(Role.USER);
         }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
+    }
+
+    public User registerUser(RegisterRequest request)
+    {
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole(Role.USER);
+        return addUser(user);
     }
 
     @Override
