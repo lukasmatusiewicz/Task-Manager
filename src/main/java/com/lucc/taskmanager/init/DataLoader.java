@@ -7,8 +7,11 @@ import com.lucc.taskmanager.model.Task;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.repository.TaskRepository;
 import com.lucc.taskmanager.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +19,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
+@Profile({"local", "dev"})
 public class DataLoader implements CommandLineRunner
 {
+    private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
+
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
@@ -38,7 +44,7 @@ public class DataLoader implements CommandLineRunner
             User user = new User("user", passwordEncoder.encode("user123"), "user@gmail.com", Role.USER);
 
             userRepository.saveAll(List.of(admin, user));
-            System.out.println("Users loaded");
+            logger.info("Default local/dev seed users loaded");
 
             LocalDate today = LocalDate.now();
 
@@ -62,7 +68,7 @@ public class DataLoader implements CommandLineRunner
             Task userTask5 = new Task("Clean the Room", "Deep clean the bedroom.", user, Status.TODO, Priority.MEDIUM, today.plusDays(1));
 
             taskRepository.saveAll(List.of(adminTask1, adminTask2, adminTask3, adminTask4, adminTask5, adminTask6, adminTask7, userTask1, userTask2, userTask3, userTask4, userTask5));
-            System.out.println("Tasks loaded");
+            logger.info("Default local/dev seed tasks loaded");
         }
     }
 }

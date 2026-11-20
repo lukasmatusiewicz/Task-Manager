@@ -7,6 +7,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -21,16 +23,21 @@ public class SecurityConfig
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
     {
+        CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
+
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
-                        .requestMatchers("/register/**", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/login", "/register/**", "/styles.css", "/error", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/users/**").hasRole("ADMIN")
-                        .requestMatchers("/tasks/**").hasAnyRole("ADMIN", "USER")
-                        .anyRequest().permitAll()
+                        .requestMatchers("/api/tasks/**", "/tasks/**", "/dashboard/**").hasAnyRole("ADMIN", "USER")
+                        .anyRequest().authenticated()
         ).formLogin(formLogin ->
                 formLogin.loginPage("/login")
                          .defaultSuccessUrl("/tasks").permitAll())
-        .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/**", "/v3/api-docs/**", "/swagger-ui/**"))
+        .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(requestHandler))
         .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()));
 
         return http.build();
