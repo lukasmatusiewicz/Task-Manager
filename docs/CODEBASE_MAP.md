@@ -31,9 +31,10 @@
 │   │   │   │   └── SecurityConfig.java           # BCrypt encoder, HTTP auth rules, form login, CSRF & frame headers
 │   │   │   ├── controller/
 │   │   │   │   ├── DashboardController.java      # GET /dashboard — summary stats & chart counts
-│   │   │   │   ├── GlobalExceptionHandler.java   # @ControllerAdvice mapping exceptions to templates/error.html
+│   │   │   │   ├── GlobalExceptionHandler.java   # UI @ControllerAdvice mapping exceptions to templates/error.html
 │   │   │   │   ├── LoginController.java          # GET /login — renders login view
 │   │   │   │   ├── RegistrationController.java   # GET/POST /register — user sign-up flow via RegisterRequest
+│   │   │   │   ├── RestExceptionHandler.java     # REST @RestControllerAdvice returning JSON ApiError (400/403/404/409/500)
 │   │   │   │   ├── TaskController.java           # REST API /api/tasks (DTO CRUD + PATCH /{taskId}/toggle)
 │   │   │   │   ├── TaskUIController.java         # Thymeleaf UI /tasks (list, add, edit, delete)
 │   │   │   │   └── UserController.java           # ADMIN-only REST API /users (DTO list, create)
@@ -43,6 +44,10 @@
 │   │   │   │   ├── TaskRequest.java              # Validated REST task input DTO
 │   │   │   │   ├── TaskResponse.java             # REST task output DTO (excludes User entity)
 │   │   │   │   └── UserResponse.java             # REST user output DTO (excludes password)
+│   │   │   ├── exception/
+│   │   │   │   ├── DuplicateUsernameException.java # 409 Conflict exception for duplicate usernames
+│   │   │   │   ├── TaskAccessDeniedException.java  # 403 Forbidden exception for cross-user task access
+│   │   │   │   └── TaskNotFoundException.java      # 404 Not Found exception for missing tasks
 │   │   │   ├── init/
 │   │   │   │   └── DataLoader.java               # CommandLineRunner seeding default users & sample tasks
 │   │   │   ├── model/
@@ -72,7 +77,8 @@
 │       ├── java/com/lucc/taskmanager/
 │       │   ├── TaskManagerApplicationTests.java  # Spring Boot contextLoads smoke test (@ActiveProfiles("test"))
 │       │   ├── controller/
-│       │   │   └── SecurityAndControllerIntegrationTest.java # MockMvc security, CSRF, DTO, & authz tests
+│       │   │   ├── SecurityAndControllerIntegrationTest.java # MockMvc security, CSRF, DTO, & authz tests
+│       │   │   └── TaskUIAndDashboardIntegrationTest.java    # MockMvc REST error & Thymeleaf UI/Dashboard tests
 │       │   └── service/
 │       │       ├── TaskServiceTest.java          # Mockito unit tests for TaskService
 │       │       └── UserServiceTest.java          # Mockito unit tests for UserService
@@ -92,14 +98,14 @@
 
 | Task Area | Read First (Exact Minimal Files) |
 | :--- | :--- |
-| **REST API endpoints** | `src/main/java/com/lucc/taskmanager/controller/TaskController.java`, `UserController.java`, `src/main/java/com/lucc/taskmanager/dto/*.java` |
+| **REST API endpoints** | `src/main/java/com/lucc/taskmanager/controller/TaskController.java`, `UserController.java`, `RestExceptionHandler.java`, `src/main/java/com/lucc/taskmanager/dto/*.java` |
 | **Thymeleaf UI & controllers** | `src/main/java/com/lucc/taskmanager/controller/TaskUIController.java`, `DashboardController.java`, `RegistrationController.java`, `LoginController.java`, `src/main/java/com/lucc/taskmanager/dto/RegisterRequest.java`, `src/main/resources/templates/*.html` |
 | **Security, auth & CSRF** | `src/main/java/com/lucc/taskmanager/config/SecurityConfig.java`, `src/main/java/com/lucc/taskmanager/model/User.java`, `src/main/java/com/lucc/taskmanager/service/UserService.java` |
-| **Services & business logic** | `src/main/java/com/lucc/taskmanager/service/TaskService.java`, `src/main/java/com/lucc/taskmanager/service/UserService.java` |
+| **Services & business logic** | `src/main/java/com/lucc/taskmanager/service/TaskService.java`, `src/main/java/com/lucc/taskmanager/service/UserService.java`, `src/main/java/com/lucc/taskmanager/exception/*.java` |
 | **JPA entities & repositories** | `src/main/java/com/lucc/taskmanager/model/Task.java`, `User.java`, `Status.java`, `Priority.java`, `Role.java`, `src/main/java/com/lucc/taskmanager/repository/TaskRepository.java`, `UserRepository.java` |
 | **Seed data & AOP logging** | `src/main/java/com/lucc/taskmanager/init/DataLoader.java`, `src/main/java/com/lucc/taskmanager/aspect/LoggingAspect.java` |
 | **Docker & DB configuration** | `docker-compose.yml`, `Dockerfile`, `src/main/resources/application.properties`, `src/test/resources/application-test.properties` |
-| **Tests & CI/CD** | `src/test/java/com/lucc/taskmanager/controller/SecurityAndControllerIntegrationTest.java`, `service/TaskServiceTest.java`, `service/UserServiceTest.java`, `TaskManagerApplicationTests.java`, `.github/workflows/maven.yml`, `pom.xml` |
+| **Tests & CI/CD** | `src/test/java/com/lucc/taskmanager/controller/SecurityAndControllerIntegrationTest.java`, `TaskUIAndDashboardIntegrationTest.java`, `service/TaskServiceTest.java`, `service/UserServiceTest.java`, `TaskManagerApplicationTests.java`, `.github/workflows/maven.yml`, `pom.xml` |
 | **Docs & project overview** | `README.md`, `CONTRIBUTING.md`, `docs/CODEBASE_MAP.md` |
 
 ---
@@ -111,7 +117,7 @@
   - **UI Controllers** (`TaskUIController`, `DashboardController`, `RegistrationController`, `LoginController`) and **REST Controllers** (`TaskController` at `/api/tasks`, `UserController` at `/users`) receive HTTP requests and resolve `@AuthenticationPrincipal User`.
   - **Service Layer** (`TaskService`, `UserService`) enforces task ownership checks (`task.getUser().getUsername().equals(user.getUsername())`), manages `completionDate` transitions, encodes passwords via `PasswordEncoder`, and implements `UserDetailsService`.
   - **Repository Layer** (`TaskRepository`, `UserRepository`) extends `JpaRepository` to persist `Task` and `User` (`users` table) in PostgreSQL (runtime) or H2 (test profile).
-- **Exception Handling**: `GlobalExceptionHandler` (`@ControllerAdvice`) catches `IllegalArgumentException` and generic `Exception`, populating `errorMessage` and rendering `src/main/resources/templates/error.html`.
+- **Exception Handling**: `RestExceptionHandler` (`@RestControllerAdvice` for `TaskController` and `UserController`, highest precedence) returns structured JSON `ApiError` responses (`400`, `403`, `404`, `409`, `500`), while `GlobalExceptionHandler` (`@ControllerAdvice` scoped to UI controllers) sets the HTTP status code and renders `src/main/resources/templates/error.html`.
 - **Cross-Cutting AOP**: `LoggingAspect` (`@Aspect`) intercepts all methods in `com.lucc.taskmanager.controller.*` with `@Before` and `@AfterReturning` advice.
 - **Test & CI Roots**: `./mvnw test` runs JUnit 5 + Mockito unit tests (`TaskServiceTest`, `UserServiceTest`) and `TaskManagerApplicationTests` (`@ActiveProfiles("test")`); `.github/workflows/maven.yml` runs `mvn -B package -Dspring.profiles.active=test --file pom.xml` and updates `.github/badges/*.svg` via JaCoCo.
 
