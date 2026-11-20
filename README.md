@@ -1,118 +1,107 @@
-# 🚀 Modern Task Manager - Portfolio Project
+# Task Manager
 
 ![Coverage](.github/badges/jacoco.svg)
 ![Branches](.github/badges/branches.svg)
 
-A comprehensive, full-stack Task Management application built with **Spring Boot 3** and **Java 21**. This project serves as a showcase of modern software engineering practices, featuring a layered architecture, robust security, and a responsive, interactive UI.
+A full-stack task management web application and REST API built with **Spring Boot 3.4.3** and **Java 21**.
 
 ---
 
-## 🧪 How to Test
+## Tech Stack
 
-This project is designed to be easily testable by anyone, whether they are a developer, a recruiter, or a manual tester.
-
-### **1. The Full Experience (Web UI)**
-*   **Register a New Account**: Navigate to `http://localhost:8080/register` and create your own user.
-*   **Explore the Dashboard**: Visit the new **Dashboard** to see live statistics like pending tasks, overdue items, and your weekly completion rate. Check out the interactive charts for status and priority distribution.
-*   **Manage Your Tasks**: Add tasks with **Due Dates**. Use the new **Quick Toggle** (Done/Undone) to update task status instantly from the list.
-*   **Security Check**: Try to access `http://localhost:8080/tasks` without logging in—you'll be automatically redirected to the secure login page.
-
-### **2. Interactive API Testing (Swagger)**
-*   Navigate to `http://localhost:8080/swagger-ui.html`.
-*   Explore all documented REST endpoints with **detailed operation descriptions** and **predefined API responses**.
-*   Click **"Try it out"** on any endpoint (like `POST /api/tasks`) to send real JSON requests and see the live responses directly in your browser.
-
-### **3. Database Inspection (PostgreSQL)**
-*   Use a tool like **pgAdmin 4** or **DBeaver** to connect to your local database.
-*   **Host**: `localhost` | **Port**: `5432`
-*   **Database**: `taskmanager` | **User**: `postgres`
-*   Run `SELECT * FROM users;` or `SELECT * FROM task;` to see your persistent data.
-
-### **4. Containerized Portability (Docker)**
-*   No Java installed? No problem. Run `docker-compose up --build` to spin up both the application and a **PostgreSQL** database in isolated containers.
-
-### **5. CI/CD with GitHub Actions**
-*   The project includes a GitHub Actions workflow (`maven.yml`) that automatically builds the project and runs all tests on every push or pull request to the `master`, `main`, or `dockerization` branches.
+- **Backend**: Java 21, Spring Boot 3.4.3, Spring Security 6, Spring Data JPA (Hibernate), Spring AOP (`LoggingAspect`), Bean Validation, Spring Boot Actuator
+- **Frontend**: Thymeleaf, Bootstrap 5, Chart.js, Fetch API, `localStorage` dark-mode toggle
+- **Database**: PostgreSQL 16 (runtime / Docker), H2 in-memory in PostgreSQL mode (tests / `test` profile)
+- **API Docs**: SpringDoc OpenAPI 2.8.5 (`/swagger-ui.html`, `/v3/api-docs`)
+- **Build & CI**: Maven Wrapper (`mvnw` / `mvnw.cmd`), JUnit 5, Mockito, `MockMvc`, JaCoCo 0.8.12, GitHub Actions
 
 ---
 
-## 🧪 Testing
+## Architecture & Security Overview
 
-The project includes a suite of unit tests for the service layer, ensuring business logic correctness.
+The application follows a layered structure (`Controller` -> `Service` -> `Repository` -> `Model`/`DTO`):
 
-*   **TaskServiceTest**: Tests CRUD operations, user-based task access, and validation logic.
-*   **UserServiceTest**: Tests user registration, password encryption, and Spring Security's `UserDetailsService` implementation.
-
-To run the tests locally, use:
-```bash
-./mvnw test
-```
+- **Authentication & Authorization (`SecurityConfig`)**: Session-based authentication (`formLogin` at `/login`, defaulting to `/tasks`, with `/` redirecting to `/tasks`). Public endpoints are limited to `/login`, `/register/**`, `/styles.css`, `/favicon.ico`, `/error`, `/actuator/health`, `/swagger-ui/**`, and `/v3/api-docs/**`. `/tasks/**`, `/dashboard/**`, and `/api/tasks/**` require `USER` or `ADMIN`; `/users/**` requires `ADMIN`; all other requests require authentication.
+- **CSRF Protection**: Enabled across both UI forms and `/api/**` endpoints using `CookieCsrfTokenRepository.withHttpOnlyFalse()` and `CsrfTokenRequestAttributeHandler`.
+- **DTO Contracts & Registration**: REST endpoints (`/api/tasks`, `/users`) accept and return explicit DTOs (`TaskRequest`, `TaskResponse`, `AdminCreateUserRequest`, `UserResponse`) so JPA entities and password hashes are never serialized. Public registration (`/register`) binds `RegisterRequest` (without a `role` field), always assigns `Role.USER` server-side, and reports duplicate usernames as a field validation error.
+- **Separated Error Handling**: `RestExceptionHandler` (`@RestControllerAdvice` scoped to `TaskController` and `UserController`) returns structured JSON `ApiError` responses (`400`, `403`, `404`, `409`, `500`), while `GlobalExceptionHandler` (`@ControllerAdvice` scoped to UI controllers) sets the HTTP status code and renders `templates/error.html`.
+- **Task Features**: Create, edit, delete, and quick-toggle (`TODO` / `DONE`) tasks with priority (`LOW`, `MEDIUM`, `HIGH`), optional description (up to 255 characters), optional due date, and automatic `completionDate` tracking. The `/dashboard` view displays pending, overdue, and weekly completion counts alongside Chart.js status/priority charts.
 
 ---
 
-## 🛠️ Tech Stack & Skills Showcased
+## Running Locally
 
-### **Backend (Java/Spring Boot)**
-*   **Java 21**
-*   **Spring Boot 3.4.3**: High-performance backend framework.
-*   **Spring Security**: Robust authentication and role-based access control (USER/ADMIN), with CSRF protection and secure password hashing (BCrypt).
-*   **Spring Data JPA (Hibernate)**: Advanced ORM for seamless database interaction.
-*   **Spring AOP**: Aspect-Oriented Programming for cross-cutting concerns (e.g., custom `LoggingAspect`).
-*   **Validation**: Implementation of the **Bean Validation API** (`@Valid`, `@NotBlank`, `@Size`) for data integrity.
-*   **Global Error Handling**: Centralized exception management using `@ControllerAdvice` for a consistent user experience.
+### Option 1: Quick Start with In-Memory H2 (`test` profile)
 
-### **Database & Persistence**
-*   **PostgreSQL**: Production-grade persistent database.
-*   **Dockerized Storage**: Database persistence maintained via Docker Volumes.
+No PostgreSQL installation is required. The database starts empty; create an account at `http://localhost:8080/register`.
 
-### **Frontend & UX**
-*   **Thymeleaf**: Modern server-side Java template engine.
-*   **Bootstrap 5**: Responsive, mobile-first design for a professional look.
-*   **Chart.js**: Interactive data visualization for task statistics.
-*   **AJAX (Fetch API)**: Interactive, "snappy" UI features like task deletion and status toggling without full-page reloads.
+- **Windows**:
+  ```powershell
+  .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=test"
+  ```
+- **Linux / macOS**:
+  ```bash
+  ./mvnw spring-boot:run -Dspring-boot.run.profiles=test
+  ```
 
-### **DevOps & Documentation**
-*   **Docker & Docker Compose**: Full containerization for one-command environment setup.
-*   **SpringDoc OpenAPI / Swagger**: Automated API documentation and interactive testing environment.
-*   **Maven**: Dependency management and build automation.
+### Option 2: Local PostgreSQL (`local` profile, default)
 
----
+By default, `application.properties` activates the `local` profile and connects to `jdbc:postgresql://localhost:5432/taskmanager` as `postgres` using `${DB_PASSWORD}`.
 
-## ✨ Key Features
-*   **Interactive Dashboard**: Real-time summary of pending, overdue, and recently completed tasks with visual charts.
-*   **Dark Mode Support**: Full dark theme support with persistence across sessions using `localStorage`.
-*   **Full CRUD Cycle**: Create, Read, Update, and Delete tasks.
-*   **Due Date Tracking**: Set deadlines for tasks and track overdue items.
-*   **Quick Status Toggle**: Instantly mark tasks as Done or Undone from the main list view.
-*   **User Lifecycle**: Public registration and secure login system.
-*   **Task Metadata**: Categorize tasks by **Status** (TODO, DONE) and **Priority** (HIGH, MEDIUM, LOW).
-*   **RESTful API**: Comprehensive API endpoints for programmatic task management, fully documented with professional-grade OpenAPI descriptions and responses.
+1. Set `DB_PASSWORD` in your shell (or create a gitignored `src/main/resources/application-local.properties` to override datasource settings):
+   ```powershell
+   $env:DB_PASSWORD="your_password"
+   .\mvnw.cmd spring-boot:run
+   ```
+   *(On Linux/macOS: `DB_PASSWORD=your_password ./mvnw spring-boot:run`)*
+2. In the `local` and `dev` profiles, `DataLoader` seeds sample accounts when the `users` table is empty:
+   - `user` / `user123` (`USER`)
+   - `admin` / `admin123` (`ADMIN`)
 
----
+### Option 3: Docker Compose
 
-## 🚀 Quick Start (Docker)
+1. Build the JAR:
+   - Windows: `.\mvnw.cmd clean package -DskipTests`
+   - Linux / macOS: `./mvnw clean package -DskipTests`
+2. Start PostgreSQL 16 and the application container:
+   ```bash
+   docker-compose up --build
+   ```
+   The `app` container healthcheck probes `http://localhost:8080/actuator/health` using BusyBox `wget`.
 
-1.  **Clone and build the application**:
-    ```bash
-    ./mvnw clean package -DskipTests
-    ```
-2.  **Spin up the environment**:
-    ```bash
-    docker-compose up --build
-    ```
-3.  **Access the application**:
-    *   **UI**: `http://localhost:8080/tasks`
-    *   **API Docs (Swagger)**: `http://localhost:8080/swagger-ui.html`
-    *   **Database (PostgreSQL)**: Use pgAdmin 4 or your preferred SQL client at `localhost:5432`.
+### Useful URLs
+
+- **Web UI**: `http://localhost:8080/` (redirects to `/tasks` after login)
+- **Swagger UI**: `http://localhost:8080/swagger-ui.html`
+- **Health Check**: `http://localhost:8080/actuator/health`
 
 ---
 
-## 🏗️ Architectural Overview
-This project follows a clean **Layered Architecture**:
-*   **Controller Layer**: Handles HTTP requests and manages UI/REST transitions.
-*   **Service Layer**: Encapsulates business logic and security checks.
-*   **Repository Layer**: Interacts with the data source using JPA.
-*   **Model Layer**: Defines the core entities and validation rules.
+## Testing & CI/CD
+
+Run the full test suite (35 tests across 5 test classes using H2 in PostgreSQL mode):
+
+- **Windows**: `.\mvnw.cmd test`
+- **Linux / macOS**: `./mvnw test`
+
+### Test Classes
+
+- `TaskManagerApplicationTests`: Spring Boot `contextLoads` smoke test (`test` profile).
+- `TaskServiceTest`: Mockito unit tests for task CRUD, user ownership enforcement (`TaskNotFoundException`, `TaskAccessDeniedException`), `completionDate` transitions, and dashboard stats.
+- `UserServiceTest`: Mockito unit tests for user registration, duplicate-username rejection (`DuplicateUsernameException`), BCrypt password encoding, and `UserDetailsService`.
+- `SecurityAndControllerIntegrationTest`: `MockMvc` integration tests for unauthenticated redirects, `USER`/`ADMIN` role enforcement, registration privilege-escalation prevention, DTO response filtering (no `password` or `User` entity leakage), cross-user `403` JSON responses, CSRF enforcement on `/api/tasks/**`, and unauthenticated `/actuator/health` access.
+- `TaskUIAndDashboardIntegrationTest`: `MockMvc` integration tests for REST `400`/`404`/`409` JSON error responses, `TaskUIController` CRUD and error views, `DashboardController` model attributes, `/` and `/favicon.ico` routing, and optional task descriptions.
+
+### GitHub Actions CI
+
+`.github/workflows/maven.yml` runs on pushes and pull requests to `main`:
+- `build-and-test` (`contents: read`): builds and tests with `./mvnw -B package -Dspring.profiles.active=test --file pom.xml` on JDK 21.
+- `update-badges` (`contents: write`, runs only on `push` to `main`): regenerates `.github/badges/*.svg` from the JaCoCo CSV artifact.
 
 ---
-*Note: This is a portfolio project designed to demonstrate clean code, security best practices, and a modern Java/Spring stack.*
+
+## Current Scope & Known Limitations
+
+- **Single task list per user**: Tasks belong directly to a user without separate named lists or categories; multiple task lists (`TaskList`) are a planned future enhancement.
+- **Stateful session authentication**: Authentication uses Spring Security `formLogin` sessions and CSRF tokens rather than stateless JWT or OAuth2 bearer tokens.
+- **Profile-gated seed accounts**: Default `admin` and `user` accounts are seeded only in `local` and `dev` profiles when the database is empty.
