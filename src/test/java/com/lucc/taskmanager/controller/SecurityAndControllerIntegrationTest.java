@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -130,17 +131,20 @@ class SecurityAndControllerIntegrationTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatePayload))
-                .andExpect(view().name("error"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
 
         mockMvc.perform(patch("/api/tasks/" + regularUserTask.getId() + "/toggle")
                         .with(user(otherUser))
                         .with(csrf()))
-                .andExpect(view().name("error"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
 
         mockMvc.perform(delete("/api/tasks/" + regularUserTask.getId())
                         .with(user(otherUser))
                         .with(csrf()))
-                .andExpect(view().name("error"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.status").value(403));
 
         Task persisted = taskRepository.findById(regularUserTask.getId()).orElseThrow();
         assertEquals("Alice Task", persisted.getTitle());
