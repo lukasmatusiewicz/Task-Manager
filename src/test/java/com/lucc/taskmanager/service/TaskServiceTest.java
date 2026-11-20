@@ -1,5 +1,7 @@
 package com.lucc.taskmanager.service;
 
+import com.lucc.taskmanager.exception.TaskAccessDeniedException;
+import com.lucc.taskmanager.exception.TaskNotFoundException;
 import com.lucc.taskmanager.model.Priority;
 import com.lucc.taskmanager.model.Status;
 import com.lucc.taskmanager.model.Task;
@@ -85,7 +87,7 @@ public class TaskServiceTest {
     void getTaskById_ShouldThrowException_WhenTaskDoesNotExist() {
         when(taskRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> taskService.getTaskById(1, user));
+        assertThrows(TaskNotFoundException.class, () -> taskService.getTaskById(1, user));
     }
 
     @Test
@@ -94,7 +96,7 @@ public class TaskServiceTest {
         otherUser.setUsername("otheruser");
         when(taskRepository.findById(1)).thenReturn(Optional.of(task));
 
-        assertThrows(IllegalArgumentException.class, () -> taskService.getTaskById(1, otherUser));
+        assertThrows(TaskAccessDeniedException.class, () -> taskService.getTaskById(1, otherUser));
     }
 
     @Test
@@ -207,7 +209,7 @@ public class TaskServiceTest {
     void deleteTask_ShouldThrowException_WhenTaskDoesNotExist() {
         when(taskRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThrows(IllegalArgumentException.class, () -> taskService.deleteTask(1, user));
+        assertThrows(TaskNotFoundException.class, () -> taskService.deleteTask(1, user));
         verify(taskRepository, never()).delete(any(Task.class));
     }
 
@@ -217,7 +219,7 @@ public class TaskServiceTest {
         otherUser.setUsername("otheruser");
         when(taskRepository.findById(1)).thenReturn(Optional.of(task));
 
-        assertThrows(IllegalArgumentException.class, () -> taskService.deleteTask(1, otherUser));
+        assertThrows(TaskAccessDeniedException.class, () -> taskService.deleteTask(1, otherUser));
         verify(taskRepository, never()).delete(any(Task.class));
     }
 }

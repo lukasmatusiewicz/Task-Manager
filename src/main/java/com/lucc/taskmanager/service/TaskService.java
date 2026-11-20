@@ -1,5 +1,7 @@
 package com.lucc.taskmanager.service;
 
+import com.lucc.taskmanager.exception.TaskAccessDeniedException;
+import com.lucc.taskmanager.exception.TaskNotFoundException;
 import com.lucc.taskmanager.model.Status;
 import com.lucc.taskmanager.model.Task;
 import com.lucc.taskmanager.model.User;
@@ -37,10 +39,10 @@ public class TaskService
 
     public Task getTaskById(int taskId, User user)
     {
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("No such task with id: " + taskId));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("No such task with id: " + taskId));
 
         if(!task.getUser().getUsername().equals(user.getUsername()))
-            throw new IllegalArgumentException("You can only access your own tasks.");
+            throw new TaskAccessDeniedException("You can only access your own tasks.");
 
         return task;
     }
@@ -66,10 +68,10 @@ public class TaskService
 
     public void deleteTask(int taskId, User user)
     {
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new IllegalArgumentException("No such task with id: " + taskId));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("No such task with id: " + taskId));
 
         if(!task.getUser().getUsername().equals(user.getUsername()))
-            throw new IllegalArgumentException("You can only delete your own tasks.");
+            throw new TaskAccessDeniedException("You can only delete your own tasks.");
 
         taskRepository.delete(task);
     }
