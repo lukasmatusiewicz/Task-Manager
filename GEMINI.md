@@ -25,7 +25,7 @@
 - Keep `README.md` and all documentation factual and modest: document only verified current behavior and clearly separate current capabilities from future improvements.
 
 ## 6. End-of-Task PR Summary
-- At the end of every completed task (before the user opens a Pull Request), always provide a concise, copy-pasteable **PR Summary** containing:
+- At the end of every completed task (before the user opens a Pull Request), always provide a concise, copy-pasteable **PR Summary** wrapped inside a fenced markdown code block (` ```markdown ` / ` ``` `) containing:
   - A short PR title
   - A bullet list of what changed
   - Verified checks/commands run and their exact outcomes
