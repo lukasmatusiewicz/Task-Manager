@@ -70,7 +70,8 @@
 │       │       └── UserServiceTest.java          # Mockito unit tests for UserService
 │       └── resources/
 │           └── application-test.properties       # In-memory H2 (PostgreSQL mode) config for tests
-├── Dockerfile                          # Multi-stage/runtime image: eclipse-temurin:21-jdk-alpine running app.jar
+├── CONTRIBUTING.md                     # Contributor guidelines, security contracts, and PR summary standards
+├── Dockerfile                          # Single-stage runtime image: eclipse-temurin:21-jdk-alpine running app.jar
 ├── docker-compose.yml                  # PostgreSQL 16 + app services with healthchecks & volume
 ├── pom.xml                             # Maven build, Java 21, Spring Boot 3.4.3, JaCoCo 0.8.12
 ├── mvnw / mvnw.cmd                     # Maven Wrapper scripts (Unix / Windows)
@@ -91,7 +92,7 @@
 | **Seed data & AOP logging** | `src/main/java/com/lucc/taskmanager/init/DataLoader.java`, `src/main/java/com/lucc/taskmanager/aspect/LoggingAspect.java` |
 | **Docker & DB configuration** | `docker-compose.yml`, `Dockerfile`, `src/main/resources/application.properties`, `src/test/resources/application-test.properties` |
 | **Tests & CI/CD** | `src/test/java/com/lucc/taskmanager/service/TaskServiceTest.java`, `UserServiceTest.java`, `TaskManagerApplicationTests.java`, `.github/workflows/maven.yml`, `pom.xml` |
-| **Docs & project overview** | `README.md`, `docs/CODEBASE_MAP.md` |
+| **Docs & project overview** | `README.md`, `CONTRIBUTING.md`, `docs/CODEBASE_MAP.md` |
 
 ---
 
