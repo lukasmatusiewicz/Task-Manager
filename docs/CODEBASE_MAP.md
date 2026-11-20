@@ -18,7 +18,7 @@
 │   │   ├── branches.svg                # JaCoCo branch-coverage badge updated by CI
 │   │   └── jacoco.svg                  # JaCoCo line-coverage badge updated by CI
 │   └── workflows/
-│       └── maven.yml                   # GitHub Actions CI: JDK 21, Maven package (test profile), JaCoCo badges
+│       └── maven.yml                   # GitHub Actions CI: build-and-test (read-only) & main-only JaCoCo badge update
 ├── docs/
 │   └── CODEBASE_MAP.md                 # This living codebase map
 ├── src/
@@ -86,7 +86,7 @@
 │           └── application-test.properties       # In-memory H2 (PostgreSQL mode) config for tests
 ├── CONTRIBUTING.md                     # Contributor guidelines, security contracts, and PR summary standards
 ├── Dockerfile                          # Single-stage runtime image: eclipse-temurin:21-jdk-alpine running app.jar
-├── docker-compose.yml                  # PostgreSQL 16 + app services with healthchecks & volume
+├── docker-compose.yml                  # PostgreSQL 16 + app services with wget Actuator healthcheck & volume
 ├── pom.xml                             # Maven build, Java 21, Spring Boot 3.4.3, JaCoCo 0.8.12
 ├── mvnw / mvnw.cmd                     # Maven Wrapper scripts (Unix / Windows)
 └── README.md                           # Project overview, setup, and test instructions
@@ -119,22 +119,22 @@
   - **Repository Layer** (`TaskRepository`, `UserRepository`) extends `JpaRepository` to persist `Task` and `User` (`users` table) in PostgreSQL (runtime) or H2 (test profile).
 - **Exception Handling**: `RestExceptionHandler` (`@RestControllerAdvice` for `TaskController` and `UserController`, highest precedence) returns structured JSON `ApiError` responses (`400`, `403`, `404`, `409`, `500`), while `GlobalExceptionHandler` (`@ControllerAdvice` scoped to UI controllers) sets the HTTP status code and renders `src/main/resources/templates/error.html`.
 - **Cross-Cutting AOP**: `LoggingAspect` (`@Aspect`) intercepts all methods in `com.lucc.taskmanager.controller.*` with `@Before` and `@AfterReturning` advice.
-- **Test & CI Roots**: `./mvnw test` runs JUnit 5 + Mockito unit tests (`TaskServiceTest`, `UserServiceTest`) and `TaskManagerApplicationTests` (`@ActiveProfiles("test")`); `.github/workflows/maven.yml` runs `mvn -B package -Dspring.profiles.active=test --file pom.xml` and updates `.github/badges/*.svg` via JaCoCo.
+- **Test & CI Roots**: `./mvnw test` runs JUnit 5 + Mockito unit tests (`TaskServiceTest`, `UserServiceTest`), `MockMvc` integration tests (`SecurityAndControllerIntegrationTest`, `TaskUIAndDashboardIntegrationTest`), and `TaskManagerApplicationTests` (`@ActiveProfiles("test")`); `.github/workflows/maven.yml` runs `./mvnw -B package -Dspring.profiles.active=test --file pom.xml` and updates `.github/badges/*.svg` only on `push` to `main`.
 
 ---
 
 ## 5. Restricted, Isolated & Sensitive Zones
 
 - **`src/main/java/com/lucc/taskmanager/config/SecurityConfig.java`**:
-  - Enforces `.anyRequest().authenticated()` with `permitAll()` restricted to `/login`, `/register/**`, `/styles.css`, `/error`, `/swagger-ui/**`, and `/v3/api-docs/**`.
+  - Enforces `.anyRequest().authenticated()` with `permitAll()` restricted to `/login`, `/register/**`, `/styles.css`, `/favicon.ico`, `/error`, `/actuator/health`, `/swagger-ui/**`, and `/v3/api-docs/**`.
   - CSRF protection is enabled on `/api/**` using `CookieCsrfTokenRepository.withHttpOnlyFalse()` and `CsrfTokenRequestAttributeHandler`; `frameOptions` is set to `sameOrigin()`.
 - **`src/main/java/com/lucc/taskmanager/init/DataLoader.java`**:
   - Annotated with `@Profile({"local", "dev"})`; seeds default accounts (`admin`, `user`) only in `local`/`dev` profiles when `userRepository.count() == 0`.
 - **`src/main/resources/application.properties`**:
-  - Sets `spring.profiles.active=local`, `spring.jpa.hibernate.ddl-auto=update`, `spring.jpa.show-sql=true`, and reads `spring.datasource.password=${DB_PASSWORD}`. Do not hardcode credentials here.
+  - Sets `spring.profiles.active=local`, `spring.jpa.hibernate.ddl-auto=update`, `spring.jpa.show-sql=false`, `management.endpoints.web.exposure.include=health`, and reads `spring.datasource.password=${DB_PASSWORD}`. Do not hardcode credentials here.
 - **`docker-compose.yml`**:
-  - Falls back to `${DB_PASSWORD:-postgres}` for both `db` (`POSTGRES_PASSWORD`) and `app` (`SPRING_DATASOURCE_PASSWORD`); `app` healthcheck targets `/actuator/health`.
+  - Falls back to `${DB_PASSWORD:-postgres}` for both `db` (`POSTGRES_PASSWORD`) and `app` (`SPRING_DATASOURCE_PASSWORD`); `app` healthcheck probes `/actuator/health` with BusyBox `wget`.
 - **`.github/workflows/maven.yml`**:
-  - Grants `contents: write` to `GITHUB_TOKEN` and auto-commits updated `*.svg` coverage badges on `master`, `main`, and `dockerization`.
+  - Uses least-privilege permissions (`contents: read` on `build-and-test`, `contents: write` scoped strictly to `update-badges` on `push` to `main`), workflow `concurrency`, and `timeout-minutes`.
 - **`.env*` & Local Overrides**:
   - `.env*` files and `src/main/resources/application-local.properties` (listed in `.gitignore`) hold local secrets/overrides and must never be committed or read into shared docs.
