@@ -16,7 +16,6 @@ public class Task
     @Size(min = 3, max = 100, message = "Title must be between 3 and 100 characters")
     private String title;
 
-    @NotBlank(message = "Description is mandatory")
     @Size(max = 255, message = "Description can be up to 255 characters")
     private String description;
 
