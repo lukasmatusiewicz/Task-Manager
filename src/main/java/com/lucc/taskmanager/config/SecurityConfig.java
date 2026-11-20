@@ -28,7 +28,7 @@ public class SecurityConfig
 
         http.authorizeHttpRequests(authorizeHttpRequests ->
                 authorizeHttpRequests
-                        .requestMatchers("/login", "/register/**", "/styles.css", "/error", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/login", "/register/**", "/styles.css", "/favicon.ico", "/error", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/users/**").hasRole("ADMIN")
                         .requestMatchers("/api/tasks/**", "/tasks/**", "/dashboard/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
