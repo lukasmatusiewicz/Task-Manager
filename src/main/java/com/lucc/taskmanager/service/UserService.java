@@ -1,6 +1,7 @@
 package com.lucc.taskmanager.service;
 
 import com.lucc.taskmanager.dto.RegisterRequest;
+import com.lucc.taskmanager.exception.DuplicateUsernameException;
 import com.lucc.taskmanager.model.Role;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.repository.UserRepository;
@@ -34,7 +35,7 @@ public class UserService implements UserDetailsService
     public User addUser(User user)
     {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username is already taken");
+            throw new DuplicateUsernameException("Username is already taken");
         }
         if (user.getRole() == null) {
             user.setRole(Role.USER);
