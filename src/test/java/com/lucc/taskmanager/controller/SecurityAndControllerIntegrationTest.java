@@ -178,4 +178,14 @@ class SecurityAndControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("New Task")));
     }
+
+    @Test
+    void actuatorHealth_ShouldReturn200WithoutAuthentication() throws Exception {
+        mockMvc.perform(get("/actuator/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
+
+        mockMvc.perform(get("/actuator/env"))
+                .andExpect(status().is3xxRedirection());
+    }
 }
