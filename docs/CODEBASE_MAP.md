@@ -33,10 +33,16 @@
 │   │   │   │   ├── DashboardController.java      # GET /dashboard — summary stats & chart counts
 │   │   │   │   ├── GlobalExceptionHandler.java   # @ControllerAdvice mapping exceptions to templates/error.html
 │   │   │   │   ├── LoginController.java          # GET /login — renders login view
-│   │   │   │   ├── RegistrationController.java   # GET/POST /register — user sign-up flow
-│   │   │   │   ├── TaskController.java           # REST API /api/tasks (CRUD + PATCH /{taskId}/toggle)
+│   │   │   │   ├── RegistrationController.java   # GET/POST /register — user sign-up flow via RegisterRequest
+│   │   │   │   ├── TaskController.java           # REST API /api/tasks (DTO CRUD + PATCH /{taskId}/toggle)
 │   │   │   │   ├── TaskUIController.java         # Thymeleaf UI /tasks (list, add, edit, delete)
-│   │   │   │   └── UserController.java           # ADMIN-only REST API /users (list, create)
+│   │   │   │   └── UserController.java           # ADMIN-only REST API /users (DTO list, create)
+│   │   │   ├── dto/
+│   │   │   │   ├── AdminCreateUserRequest.java   # Validated ADMIN user-creation request DTO
+│   │   │   │   ├── RegisterRequest.java          # Validated public registration DTO (no role field)
+│   │   │   │   ├── TaskRequest.java              # Validated REST task input DTO
+│   │   │   │   ├── TaskResponse.java             # REST task output DTO (excludes User entity)
+│   │   │   │   └── UserResponse.java             # REST user output DTO (excludes password)
 │   │   │   ├── init/
 │   │   │   │   └── DataLoader.java               # CommandLineRunner seeding default users & sample tasks
 │   │   │   ├── model/
@@ -65,6 +71,8 @@
 │   └── test/
 │       ├── java/com/lucc/taskmanager/
 │       │   ├── TaskManagerApplicationTests.java  # Spring Boot contextLoads smoke test (@ActiveProfiles("test"))
+│       │   ├── controller/
+│       │   │   └── SecurityAndControllerIntegrationTest.java # MockMvc security, CSRF, DTO, & authz tests
 │       │   └── service/
 │       │       ├── TaskServiceTest.java          # Mockito unit tests for TaskService
 │       │       └── UserServiceTest.java          # Mockito unit tests for UserService
@@ -84,14 +92,14 @@
 
 | Task Area | Read First (Exact Minimal Files) |
 | :--- | :--- |
-| **REST API endpoints** | `src/main/java/com/lucc/taskmanager/controller/TaskController.java`, `src/main/java/com/lucc/taskmanager/controller/UserController.java` |
-| **Thymeleaf UI & controllers** | `src/main/java/com/lucc/taskmanager/controller/TaskUIController.java`, `DashboardController.java`, `RegistrationController.java`, `LoginController.java`, `src/main/resources/templates/*.html` |
+| **REST API endpoints** | `src/main/java/com/lucc/taskmanager/controller/TaskController.java`, `UserController.java`, `src/main/java/com/lucc/taskmanager/dto/*.java` |
+| **Thymeleaf UI & controllers** | `src/main/java/com/lucc/taskmanager/controller/TaskUIController.java`, `DashboardController.java`, `RegistrationController.java`, `LoginController.java`, `src/main/java/com/lucc/taskmanager/dto/RegisterRequest.java`, `src/main/resources/templates/*.html` |
 | **Security, auth & CSRF** | `src/main/java/com/lucc/taskmanager/config/SecurityConfig.java`, `src/main/java/com/lucc/taskmanager/model/User.java`, `src/main/java/com/lucc/taskmanager/service/UserService.java` |
 | **Services & business logic** | `src/main/java/com/lucc/taskmanager/service/TaskService.java`, `src/main/java/com/lucc/taskmanager/service/UserService.java` |
 | **JPA entities & repositories** | `src/main/java/com/lucc/taskmanager/model/Task.java`, `User.java`, `Status.java`, `Priority.java`, `Role.java`, `src/main/java/com/lucc/taskmanager/repository/TaskRepository.java`, `UserRepository.java` |
 | **Seed data & AOP logging** | `src/main/java/com/lucc/taskmanager/init/DataLoader.java`, `src/main/java/com/lucc/taskmanager/aspect/LoggingAspect.java` |
 | **Docker & DB configuration** | `docker-compose.yml`, `Dockerfile`, `src/main/resources/application.properties`, `src/test/resources/application-test.properties` |
-| **Tests & CI/CD** | `src/test/java/com/lucc/taskmanager/service/TaskServiceTest.java`, `UserServiceTest.java`, `TaskManagerApplicationTests.java`, `.github/workflows/maven.yml`, `pom.xml` |
+| **Tests & CI/CD** | `src/test/java/com/lucc/taskmanager/controller/SecurityAndControllerIntegrationTest.java`, `service/TaskServiceTest.java`, `service/UserServiceTest.java`, `TaskManagerApplicationTests.java`, `.github/workflows/maven.yml`, `pom.xml` |
 | **Docs & project overview** | `README.md`, `CONTRIBUTING.md`, `docs/CODEBASE_MAP.md` |
 
 ---
@@ -112,10 +120,10 @@
 ## 5. Restricted, Isolated & Sensitive Zones
 
 - **`src/main/java/com/lucc/taskmanager/config/SecurityConfig.java`**:
-  - `.anyRequest().permitAll()` is configured as the fallback rule; `/api/**` and `/dashboard` are not explicitly restricted in `authorizeHttpRequests` (review carefully during security audits).
-  - CSRF protection is explicitly disabled for `/h2-console/**`, `/api/**`, `/v3/api-docs/**`, and `/swagger-ui/**`, and `frameOptions` is set to `sameOrigin()`.
+  - Enforces `.anyRequest().authenticated()` with `permitAll()` restricted to `/login`, `/register/**`, `/styles.css`, `/error`, `/swagger-ui/**`, and `/v3/api-docs/**`.
+  - CSRF protection is enabled on `/api/**` using `CookieCsrfTokenRepository.withHttpOnlyFalse()` and `CsrfTokenRequestAttributeHandler`; `frameOptions` is set to `sameOrigin()`.
 - **`src/main/java/com/lucc/taskmanager/init/DataLoader.java`**:
-  - Seeds hardcoded default accounts (`admin`/`admin123` with `Role.ADMIN` and `user`/`user123` with `Role.USER`) whenever `userRepository.count() == 0` on startup.
+  - Annotated with `@Profile({"local", "dev"})`; seeds default accounts (`admin`, `user`) only in `local`/`dev` profiles when `userRepository.count() == 0`.
 - **`src/main/resources/application.properties`**:
   - Sets `spring.profiles.active=local`, `spring.jpa.hibernate.ddl-auto=update`, `spring.jpa.show-sql=true`, and reads `spring.datasource.password=${DB_PASSWORD}`. Do not hardcode credentials here.
 - **`docker-compose.yml`**:
