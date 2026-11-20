@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -32,6 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -193,5 +195,42 @@ class TaskUIAndDashboardIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("dashboard"))
                 .andExpect(model().attributeExists("pending", "overdue", "completedThisWeek", "statusCounts", "priorityCounts"));
+    }
+
+    @Test
+    void rootAndFaviconRouting_ShouldRedirectRootAndPermitFavicon() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+
+        mockMvc.perform(get("/").with(user(regularUser)))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/tasks"));
+
+        mockMvc.perform(get("/favicon.ico"))
+                .andExpect(status().is(not(302)));
+    }
+
+    @Test
+    void createTask_ShouldAllowOmittedOrEmptyDescriptionInApiAndUi() throws Exception {
+        String apiPayload = "{\"title\":\"No Desc API Task\",\"status\":\"TODO\",\"priority\":\"LOW\"}";
+
+        mockMvc.perform(post("/api/tasks")
+                        .with(user(regularUser))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(apiPayload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("No Desc API Task"));
+
+        mockMvc.perform(post("/tasks/add")
+                        .with(user(regularUser))
+                        .with(csrf())
+                        .param("title", "No Desc UI Task")
+                        .param("description", "")
+                        .param("status", "TODO")
+                        .param("priority", "MEDIUM"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/tasks"));
     }
 }
