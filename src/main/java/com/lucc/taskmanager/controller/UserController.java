@@ -1,5 +1,7 @@
 package com.lucc.taskmanager.controller;
 
+import com.lucc.taskmanager.dto.AdminCreateUserRequest;
+import com.lucc.taskmanager.dto.UserResponse;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.service.UserService;
 import jakarta.validation.Valid;
@@ -31,24 +33,27 @@ public class UserController
     @GetMapping
     @Operation(summary = "Get all users", description = "Retrieves a comprehensive list of all registered users in the system. This endpoint is restricted to users with the ADMIN role.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully retrieved users", content = @Content(array = @ArraySchema(schema = @Schema(implementation = User.class)))),
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved users", content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
         @ApiResponse(responseCode = "403", description = "Access denied - Admin role required", content = @Content)
     })
-    public List<User> getUsers()
+    public List<UserResponse> getUsers()
     {
-        return userService.getUsers();
+        return userService.getUsers().stream()
+                .map(UserResponse::from)
+                .toList();
     }
 
     @PostMapping
     @Operation(summary = "Add a new user", description = "Creates a new user account. This endpoint is restricted to users with the ADMIN role.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully created the user", content = @Content(schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "200", description = "Successfully created the user", content = @Content(schema = @Schema(implementation = UserResponse.class))),
         @ApiResponse(responseCode = "400", description = "Invalid user data provided", content = @Content),
         @ApiResponse(responseCode = "403", description = "Access denied - Admin role required", content = @Content)
     })
-    public User addUser(@Valid @RequestBody User user)
+    public UserResponse addUser(@Valid @RequestBody AdminCreateUserRequest request)
     {
-        return userService.addUser(user);
+        User user = new User(request.getUsername(), request.getPassword(), request.getEmail(), request.getRole());
+        return UserResponse.from(userService.addUser(user));
     }
 }
 

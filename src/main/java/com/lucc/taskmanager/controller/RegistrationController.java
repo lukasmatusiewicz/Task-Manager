@@ -1,6 +1,6 @@
 package com.lucc.taskmanager.controller;
 
-import com.lucc.taskmanager.model.User;
+import com.lucc.taskmanager.dto.RegisterRequest;
 import com.lucc.taskmanager.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -21,16 +21,21 @@ public class RegistrationController {
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new RegisterRequest());
         return "register";
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("user") User user, BindingResult bindingResult) {
+    public String registerUser(@Valid @ModelAttribute("user") RegisterRequest registerRequest, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             return "register";
         }
-        userService.addUser(user);
+        try {
+            userService.registerUser(registerRequest);
+        } catch (IllegalArgumentException ex) {
+            bindingResult.rejectValue("username", "error.user", ex.getMessage());
+            return "register";
+        }
         return "redirect:/login";
     }
 }

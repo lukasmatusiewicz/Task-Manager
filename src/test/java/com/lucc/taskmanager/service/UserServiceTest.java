@@ -1,5 +1,6 @@
 package com.lucc.taskmanager.service;
 
+import com.lucc.taskmanager.dto.RegisterRequest;
 import com.lucc.taskmanager.model.Role;
 import com.lucc.taskmanager.model.User;
 import com.lucc.taskmanager.repository.UserRepository;
@@ -81,5 +82,27 @@ public class UserServiceTest {
         when(userRepository.findByUsername("unknown")).thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class, () -> userService.loadUserByUsername("unknown"));
+    }
+
+    @Test
+    void addUser_ShouldThrowException_WhenUsernameAlreadyExists() {
+        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(user));
+
+        assertThrows(IllegalArgumentException.class, () -> userService.addUser(user));
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void registerUser_ShouldAlwaysAssignUserRole() {
+        RegisterRequest request = new RegisterRequest("newuser", "new@example.com", "secret123");
+        when(userRepository.findByUsername("newuser")).thenReturn(Optional.empty());
+        when(passwordEncoder.encode("secret123")).thenReturn("encodedSecret");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        User registered = userService.registerUser(request);
+
+        assertEquals("newuser", registered.getUsername());
+        assertEquals(Role.USER, registered.getRole());
+        assertEquals("encodedSecret", registered.getPassword());
     }
 }

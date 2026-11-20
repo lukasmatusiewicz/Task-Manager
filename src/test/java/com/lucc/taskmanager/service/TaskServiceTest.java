@@ -202,4 +202,22 @@ public class TaskServiceTest {
 
         verify(taskRepository, times(1)).delete(task);
     }
+
+    @Test
+    void deleteTask_ShouldThrowException_WhenTaskDoesNotExist() {
+        when(taskRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThrows(IllegalArgumentException.class, () -> taskService.deleteTask(1, user));
+        verify(taskRepository, never()).delete(any(Task.class));
+    }
+
+    @Test
+    void deleteTask_ShouldThrowException_WhenUserDoesNotMatch() {
+        User otherUser = new User();
+        otherUser.setUsername("otheruser");
+        when(taskRepository.findById(1)).thenReturn(Optional.of(task));
+
+        assertThrows(IllegalArgumentException.class, () -> taskService.deleteTask(1, otherUser));
+        verify(taskRepository, never()).delete(any(Task.class));
+    }
 }
